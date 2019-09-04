@@ -3,9 +3,13 @@ import logging
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
+#from airflow.operators.docker_operator import DockerOperator
+#from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
+
 from datetime import datetime
+
 import docker
-from docker import Client
+import docker.client
 
 log = logging.getLogger(__name__)
 
@@ -76,16 +80,39 @@ with DAG('pipeline_docker', default_args=default_args) as dag:
         python_callable=launch_docker_container
     )
 
-    t2_2_id = 'do_task_two'
+    t2_2_id = 'do_task_four'
     t2_2 = PythonOperator(
         task_id=t2_2_id,
         provide_context=True,
         op_kwargs={
-            'image_name': 'task2',
+            'image_name': 'task4',
             'my_id': t2_2_id
         },
         python_callable=launch_docker_container
     )
+    
+#    t2_3_id = 'do_docker_container'
+#    t2_3 = DockerOperator(
+#        task_id = t2_3_id,
+#        image="task4:latest",
+#        api_version='auto',
+#        auto_remove=True,
+#        command="/bin/sleep 30",
+#        docker_url="unix://var/run/docker.sock",
+#        network_mode="bridge"
+#    )
+
+#    t2_4_id = "do_kubernetes"
+#    t2_4 = KubernetesPodOperator(
+#        namespace='default',
+#        image="python:3.7",
+#        cmds=["python","-c"],
+#        arguments=["print('hello world')"],
+#        labels={"foo": "bar"},
+#        name="kube_pass",
+#        task_id=t2_4_id,
+#        get_logs=True,
+#    )
 
     t3 = PythonOperator(
         task_id='read_xcoms',
